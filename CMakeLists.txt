@@ -35,28 +35,40 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(cyclic-scheduler cyclic-scheduler.c )
+add_executable(cyclic-scheduler main.c setup.c irq_handlers.c tarefa1_temp.c tarefa2_display.c
+inc/display_utils.c
+inc/big_string_drawer.c
+inc/ssd1306_i2c.c
+inc/font_big_logo_data.c
+tarefa3_tendencia.c
+tarefa4_controla_neopixel.c
+testes_cores.c
+LabNeoPixel/neopixel_driver.c
+LabNeoPixel/efeitos.c)
 
 pico_set_program_name(cyclic-scheduler "cyclic-scheduler")
 pico_set_program_version(cyclic-scheduler "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(cyclic-scheduler 1)
+pico_enable_stdio_uart(cyclic-scheduler 0)
 pico_enable_stdio_usb(cyclic-scheduler 1)
 
 # Add the standard library to the build
-target_link_libraries(cyclic-scheduler
-        pico_stdlib)
+target_link_libraries(cyclic-scheduler pico_stdlib
+    hardware_adc
+    hardware_dma
+    hardware_irq
+    hardware_watchdog
+    hardware_i2c
+    hardware_pio)
 
 # Add the standard include files to the build
-target_include_directories(cyclic-scheduler PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-)
+target_include_directories(cyclic-scheduler PRIVATE ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/inc ${CMAKE_CURRENT_LIST_DIR}/LabNeoPixel)
 
 # Add any user requested libraries
-target_link_libraries(cyclic-scheduler 
-        
-        )
+#target_link_libraries(cyclic-scheduler)
 
 pico_add_extra_outputs(cyclic-scheduler)
 
+# Generate PIO header
+pico_generate_pio_header(cyclic-scheduler ${CMAKE_CURRENT_LIST_DIR}/LabNeoPixel/ws2818b.pio)
