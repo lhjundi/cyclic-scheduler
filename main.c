@@ -44,18 +44,10 @@ tendencia_t t;
 absolute_time_t ini_tarefa1, fim_tarefa1, ini_tarefa2, fim_tarefa2, ini_tarefa3, fim_tarefa3, ini_tarefa4, fim_tarefa4;
 
 int main() {
+        
     setup();  // Inicializações: ADC, DMA, interrupções, OLED, etc.
 
-   // while (!stdio_usb_connected()) {
-   //     sleep_ms(100);
-   // }
-
-    // Ativa o watchdog com timeout de 2 segundos
-    //watchdog_enable(2000, 1);
-
     while (true) {
-        //watchdog_update();  // Alimente o watchdog no início de cada ciclo
-
         tarefa_1();
         tarefa_5();
         tarefa_2();
@@ -69,7 +61,7 @@ int main() {
         int64_t tempo4_us = absolute_time_diff_us(ini_tarefa4, fim_tarefa4);
 
         // --- Exibição no terminal ---
-        printf("Temperatura: %.2f °C | T1: %.3fs | T2: %.3fs | T3: %.3fs | T4: %.3fs | Tendência: %s\n",
+        printf("Temperatura: %.2f °C | T1: %.7fs | T2: %.7fs | T3: %.7fs | T4: %.7fs | Tendência: %s\n",
                media,
                tempo1_us / 1e6,
                tempo2_us / 1e6,
