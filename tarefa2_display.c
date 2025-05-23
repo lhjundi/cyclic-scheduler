@@ -29,7 +29,6 @@ extern struct render_area area;
 void tarefa2_exibir_oled(float temperatura, tendencia_t tendencia) {
     ssd1306_clear_display(ssd);
     render_on_display(ssd, &area);  // Garante que a limpeza seja visível
-    sleep_ms(20);                   // Pequeno delay opcional
 
     char* linha1 = "Temperatura";
     char* linha2 = "Media";
