@@ -15,7 +15,7 @@
  *      Essa interface deve ser incluída no `main.c` para executar
  *      a tarefa após a análise da tendência.
  *
- *  
+ *
  *  Data: 12/05/2025
  * ------------------------------------------------------------
  */
@@ -23,21 +23,22 @@
 #ifndef TAREFA4_CONTROLA_NEOPIXEL_H
 #define TAREFA4_CONTROLA_NEOPIXEL_H
 
-#include "tarefa3_tendencia.h"  // para o tipo tendencia_t
+#include "tarefa3_tendencia.h" // para o tipo tendencia_t
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
- * @brief Define a cor da matriz NeoPixel conforme a tendência térmica.
- *
- * @param t Valor da tendência detectada: SUBINDO, ESTÁVEL ou CAINDO
- */
-void tarefa4_matriz_cor_por_tendencia(tendencia_t t);
+    /**
+     * @brief Define a cor da matriz NeoPixel conforme a tendência térmica.
+     *
+     * @param t Valor da tendência detectada: SUBINDO, ESTÁVEL ou CAINDO
+     */
+    void tarefa4_matriz_cor_por_tendencia(tendencia_t t);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // TAREFA4_CONTROLA_NEOPIXEL_H
+#endif // TAREFA4_CONTROLA_NEOPIXEL_H

@@ -19,7 +19,7 @@
  *      - A flag 'dma_temp_done' é usada em 'tarefa1_temp.c'
  *        para controlar o fluxo da aquisição via DMA.
  *
- *  
+ *
  *  Data: 11/05/2025
  * ------------------------------------------------------------
  */
@@ -39,7 +39,8 @@ volatile bool dma_temp_done = false;
  * 'dma_temp_done' para que o laço principal saiba que pode
  * prosseguir.
  */
-void dma_handler_temp() {
-    dma_hw->ints0 = 1u << 0;   // Limpa a interrupção do canal 0
-    dma_temp_done = true;     // Sinaliza conclusão para o executor
+void dma_handler_temp()
+{
+    dma_hw->ints0 = 1u << 0; // Limpa a interrupção do canal 0
+    dma_temp_done = true;    // Sinaliza conclusão para o executor
 }
