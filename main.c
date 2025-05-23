@@ -69,7 +69,6 @@ int main() {
                tempo4_us / 1e6,
                tendencia_para_texto(t));
 
-        sleep_ms(1000);  // Aguarda próximo ciclo
     }
 
     return 0;
