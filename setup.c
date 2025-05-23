@@ -66,8 +66,7 @@ dma_channel_config cfg_temp;
 void setup() {
     // Inicializa a comunicação USB para printf()
     stdio_init_all();
-    //while (!stdio_usb_connected()) sleep_ms(200);  // Aguarda conexão USB
-
+    
     // Inicializa o ADC do RP2040 e habilita o sensor interno (canal 4)
     adc_init();
     adc_set_temp_sensor_enabled(true);
