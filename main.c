@@ -50,8 +50,8 @@ int main() {
     while (true) {
         tarefa_1();
         tarefa_5();
-        tarefa_2();
         tarefa_3();
+        tarefa_2();
         tarefa_4();
 
         // --- Cálculo dos tempos de execução ---
@@ -83,7 +83,7 @@ void tarefa_1()
         fim_tarefa1 = get_absolute_time();
 }
 /*******************************/
-void tarefa_2()
+void tarefa_3()
 {
     // --- Tarefa 3: Análise da tendência térmica ---
         ini_tarefa3 = get_absolute_time();
@@ -91,7 +91,7 @@ void tarefa_2()
         fim_tarefa3 = get_absolute_time();
 }
 /*******************************/
-void tarefa_3()
+void tarefa_2()
 {
         // --- Tarefa 2: Exibição no OLED ---
         ini_tarefa2 = get_absolute_time();
