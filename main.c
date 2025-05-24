@@ -150,23 +150,14 @@ void task_4_update_neopixel_matrix()
         fim_tarefa4 = get_absolute_time();
 }
 
-/**
- * @brief Alerts the NeoPixel when the average temperature is below 1.
- *
- * This function continuously sets the NeoPixel to white and clears it every second
- * until the average temperature (`media`) is less than 1.
- *
- * Note: The function uses a while loop to keep checking the condition.
- */
 void task_5_alert_neopixel()
 {
-        while (media < 1)
-        {
+        if(media < 1){
                 npSetAll(COR_BRANCA);
                 npWrite();
-                sleep_ms(1000);
+        }
+        else{
                 npClear();
                 npWrite();
-                sleep_ms(1000);
         }
 }
