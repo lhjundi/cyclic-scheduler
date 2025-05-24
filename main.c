@@ -1,22 +1,45 @@
 /**
- * ------------------------------------------------------------
- *  Arquivo: main.c
- *  Projeto: TempCycleDMA
- * ------------------------------------------------------------
- *  Descrição:
- *      Ciclo principal do sistema embarcado, baseado em um
- *      executor cíclico com 3 tarefas principais:
+ * @file main.c
+ * @brief Cyclic scheduler for task management on Raspberry Pi Pico.
  *
- *      Tarefa 1 - Leitura da temperatura via DMA (meio segundo)
- *      Tarefa 2 - Exibição da temperatura e tendência no OLED
- *      Tarefa 3 - Análise da tendência da temperatura
+ * This file implements a cyclic scheduler that coordinates the execution of multiple tasks
+ * (temperature reading, OLED display update, thermal trend analysis, NeoPixel matrix update, and alert)
+ * using state flags and periodic timers. Each task is triggered by a repeating timer callback that sets
+ * a corresponding flag. The main control loop checks these flags in a fixed order and executes one task
+ * per iteration, updating the state to transition to the next task in the cycle.
  *
- *      O sistema utiliza watchdog para segurança, terminal USB
- *      para monitoramento e display OLED para visualização direta.
+ * Key Features:
+ * - Uses Pico SDK for hardware abstraction and timing.
+ * - Modular task functions for temperature acquisition, display, trend analysis, and NeoPixel control.
+ * - Timing and profiling of each task's execution duration.
+ * - State management for cyclic scheduling using boolean flags.
+ * - Integration with DMA, ADC, and external display/LED drivers.
  *
+ * Global Variables:
+ * - Flags for each task's readiness (can_read_temp, can_alert_neopixel, etc.).
+ * - Timing variables for profiling (ini_tarefaX, fim_tarefaX).
+ * - Shared data (media for temperature, t for trend).
  *
- *  Data: 12/05/2025
- * ------------------------------------------------------------
+ * Functions:
+ * - control_states(): Main scheduler, executes tasks based on flags.
+ * - update_states(): Advances state flags for cyclic scheduling.
+ * - show_duration_tasks_execution(): Prints timing and temperature/trend info.
+ * - task_1_read_temperature(): Reads and averages temperature.
+ * - task_2_show_oled(): Updates OLED display.
+ * - task_3_thermal_trend(): Analyzes temperature trend.
+ * - task_4_update_neopixel_matrix(): Updates NeoPixel matrix based on trend.
+ * - task_5_alert_neopixel(): Controls NeoPixel alert based on temperature.
+ * - Timer callbacks to set task flags.
+ *
+ * Usage:
+ * - Initialize hardware and timers in main().
+ * - Scheduler loop in main() calls control_states() continuously.
+ *
+ * Dependencies:
+ * - Pico SDK (hardware, stdlib, timer, watchdog)
+ * - External modules: setup.h, tarefa1_temp.h, tarefa2_display.h, tarefa3_tendencia.h,
+ *   tarefa4_controla_neopixel.h, neopixel_driver.h, testes_cores.h
+ * 
  */
 
 #include <stdio.h>
@@ -52,30 +75,83 @@ void show_duration_tasks_execution();
 void update_states(bool *this_state, bool *next_state);
 void control_states();
 
+/**
+ * @brief Callback function for a repeating timer.
+ *
+ * This function is called each time the repeating timer elapses.
+ * It sets the global flag `can_read_temp` to true, indicating that
+ * a temperature reading can be performed. The function returns true
+ * to keep the timer active and continue calling this callback.
+ *
+ * @param t Pointer to the repeating_timer_t structure associated with the timer.
+ * @return true to keep the timer running; false to stop the timer.
+ */
 bool repeating_timer_callback(repeating_timer_t *t)
 {
         can_read_temp = true;
         return true;
 }
 
+/**
+ * @brief Callback function for task 5, triggered by a repeating timer.
+ *
+ * This function is called each time the associated repeating timer expires.
+ * It sets the global flag `can_alert_neopixel` to true, indicating that
+ * the NeoPixel alert can be triggered. The function returns true to keep
+ * the timer active and continue calling this callback on subsequent intervals.
+ *
+ * @param t Pointer to the repeating_timer_t structure associated with the timer event.
+ * @return true to keep the timer running and continue invoking the callback.
+ */
 bool task5_callback(repeating_timer_t *t)
 {
         can_alert_neopixel = true;
         return true;
 }
 
+/**
+ * @brief Callback function for task 3, triggered by a repeating timer.
+ *
+ * This function is called each time the associated repeating timer expires.
+ * It sets the global variable `can_thermal_trend` to true, indicating that
+ * a thermal trend operation can proceed. The function returns true to
+ * continue the timer's periodic execution.
+ *
+ * @param t Pointer to the repeating_timer_t structure representing the timer event.
+ * @return true to keep the timer running for subsequent callbacks.
+ */
 bool task3_callback(repeating_timer_t *t)
 {
         can_thermal_trend = true;
         return true;
 }
 
+/**
+ * @brief Callback function for task 2, triggered by a repeating timer.
+ *
+ * This function is called each time the associated repeating timer expires.
+ * It sets the global variable `can_show_oled` to true, indicating that the OLED display
+ * can be updated or shown. The function returns true to keep the timer repeating.
+ *
+ * @param t Pointer to the repeating_timer_t structure associated with this callback.
+ * @return true to continue repeating the timer, false to stop.
+ */
 bool task2_callback(repeating_timer_t *t)
 {
         can_show_oled = true;
         return true;
 }
 
+/**
+ * @brief Callback function for task 4, triggered by a repeating timer.
+ *
+ * This function sets the flag `can_update_neopixel_matrix` to true,
+ * indicating that the NeoPixel matrix can be updated. It returns true
+ * to keep the repeating timer active.
+ *
+ * @param t Pointer to the repeating_timer_t structure associated with the timer event.
+ * @return true to continue repeating the timer, false to stop.
+ */
 bool task4_callback(repeating_timer_t *t)
 {
         can_update_neopixel_matrix = true;
@@ -283,6 +359,21 @@ void task_5_alert_neopixel()
         }
         printf("Task 5! \n");
 }
+/**
+ * @brief Main entry point of the cyclic scheduler application.
+ *
+ * This function initializes and starts multiple repeating timers with different
+ * intervals, each associated with a specific callback function to handle periodic tasks.
+ * The timers are used to schedule tasks at regular intervals, enabling cyclic execution.
+ *
+ * The `setup()` function is called to perform necessary initializations such as
+ * configuring the ADC, DMA, interrupts, OLED display, and other peripherals.
+ *
+ * The main loop continuously calls `control_states()`, which is responsible for
+ * managing the system's state based on the flags set by the timer callbacks.
+ *
+ * @return int Returns 0 upon successful execution (though this point is never reached).
+ */
 
 int main()
 {
