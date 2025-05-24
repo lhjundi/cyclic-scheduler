@@ -74,41 +74,92 @@ int main()
         return 0;
 }
 
-/*******************************/
+/**
+ * @brief Reads the temperature, calculates the average, and records timing.
+ *
+ * This function marks the start time, obtains the average temperature reading
+ * using the configuration and DMA channel, and then marks the end time.
+ *
+ * Globals used:
+ *  - ini_tarefa1: Stores the start timestamp of the task.
+ *  - fim_tarefa1: Stores the end timestamp of the task.
+ *  - media: Stores the calculated average temperature.
+ *  - cfg_temp: Configuration structure for temperature reading.
+ *  - DMA_TEMP_CHANNEL: DMA channel used for temperature sensor.
+ *
+ * Functions called:
+ *  - get_absolute_time(): Returns the current absolute time.
+ *  - tarefa1_obter_media_temp(): Calculates the average temperature.
+ */
 void task_1_read_temperature()
 {
-        // --- Tarefa 1: Leitura de temperatura via DMA ---
         ini_tarefa1 = get_absolute_time();
         media = tarefa1_obter_media_temp(&cfg_temp, DMA_TEMP_CHANNEL);
         fim_tarefa1 = get_absolute_time();
 }
-/*******************************/
+
+
+/**
+ * @brief Executes the thermal trend analysis task.
+ *
+ * This function records the start and end times of the thermal trend analysis task.
+ * It calls `tarefa3_analisa_tendencia()` with the current average value (`media`)
+ * to analyze the thermal trend and stores the result in `t`.
+ *
+ * Global variables used:
+ * - ini_tarefa3: Stores the start time of the task.
+ * - fim_tarefa3: Stores the end time of the task.
+ * - media: The average value used for trend analysis.
+ * - t: Variable to store the result of the trend analysis.
+ */
 void task_3_thermal_trend()
 {
-        // --- Tarefa 3: Análise da tendência térmica ---
         ini_tarefa3 = get_absolute_time();
         t = tarefa3_analisa_tendencia(media);
         fim_tarefa3 = get_absolute_time();
 }
-/*******************************/
+
+/**
+ * @brief Executes the OLED display task.
+ *
+ * This function records the start time, calls the function to display data on the OLED
+ * (using the variables 'media' and 't'), and then records the end time.
+ *
+ * It is assumed that 'ini_tarefa2' and 'fim_tarefa2' are used for timing measurements,
+ * and that 'media' and 't' are available in the current scope.
+ */
 void task_2_show_oled()
 {
-        // --- Tarefa 2: Exibição no OLED ---
         ini_tarefa2 = get_absolute_time();
         tarefa2_exibir_oled(media, t);
         fim_tarefa2 = get_absolute_time();
 }
-/*******************************/
+
+/**
+ * @brief Updates the NeoPixel matrix based on the current trend.
+ *
+ * This function records the start and end times of the update operation for profiling or timing purposes.
+ * It calls `tarefa4_matriz_cor_por_tendencia(t)` to update the matrix colors according to the trend.
+ *
+ * Note: The variable `t` should be defined and initialized appropriately before calling this function.
+ */
 void task_4_update_neopixel_matrix()
 {
-        // --- Tarefa 4: Cor da matriz NeoPixel por tendência ---
         absolute_time_t ini_tarefa4 = get_absolute_time();
         tarefa4_matriz_cor_por_tendencia(t);
         absolute_time_t fim_tarefa4 = get_absolute_time();
 }
+
+/**
+ * @brief Alerts the NeoPixel when the average temperature is below 1.
+ *
+ * This function continuously sets the NeoPixel to white and clears it every second
+ * until the average temperature (`media`) is less than 1.
+ *
+ * Note: The function uses a while loop to keep checking the condition.
+ */
 void task_5_alert_neopixel()
 {
-        // --- Tarefa 5: Extra ---
         while (media < 1)
         {
                 npSetAll(COR_BRANCA);
