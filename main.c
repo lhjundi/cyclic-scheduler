@@ -31,6 +31,17 @@
 #include "neopixel_driver.h"
 #include "testes_cores.h"
 #include "pico/stdio_usb.h"
+#include "hardware/timer.h"
+
+volatile float media;
+volatile tendencia_t t;
+volatile absolute_time_t ini_tarefa1, fim_tarefa1, ini_tarefa2, fim_tarefa2, ini_tarefa3, fim_tarefa3, ini_tarefa4, fim_tarefa4;
+bool can_read_temp = true;
+bool can_alert_neopixel = false;
+bool can_thermal_trend = false;
+bool can_show_oled = false;
+bool can_update_neopixel_matrix = false;
+bool can_show_durations = false;
 
 void task_3_thermal_trend();
 void task_5_alert_neopixel();
@@ -38,27 +49,106 @@ void task_4_update_neopixel_matrix();
 void task_2_show_oled();
 void task_1_read_temperature();
 void show_duration_tasks_execution();
+void update_states(bool *this_state, bool *next_state);
+void control_states();
 
-float media;
-tendencia_t t;
-absolute_time_t ini_tarefa1, fim_tarefa1, ini_tarefa2, fim_tarefa2, ini_tarefa3, fim_tarefa3, ini_tarefa4, fim_tarefa4;
-
-int main()
+bool repeating_timer_callback(repeating_timer_t *t)
 {
+        can_read_temp = true;
+        return true;
+}
 
-        setup(); // Inicializações: ADC, DMA, interrupções, OLED, etc.
+bool task5_callback(repeating_timer_t *t)
+{
+        can_alert_neopixel = true;
+        return true;
+}
 
-        while (true)
+bool task3_callback(repeating_timer_t *t)
+{
+        can_thermal_trend = true;
+        return true;
+}
+
+bool task2_callback(repeating_timer_t *t)
+{
+        can_show_oled = true;
+        return true;
+}
+
+bool task4_callback(repeating_timer_t *t)
+{
+        can_update_neopixel_matrix = true;
+        return true;
+}
+
+/**
+ * @brief Controls the execution of various system tasks based on their state flags.
+ *
+ * This function checks a series of boolean flags, each representing whether a specific task should be executed.
+ * For each flag that is set to true, the corresponding task function is called, and the state is updated to transition
+ * to the next task in the sequence. Only one task is executed per function call, based on the order of checks.
+ *
+ * @param read_temp Pointer to a boolean flag indicating if the temperature reading task should run.
+ * @param alert_neopixel Pointer to a boolean flag indicating if the Neopixel alert task should run.
+ * @param thermal_trend Pointer to a boolean flag indicating if the thermal trend analysis task should run.
+ * @param show_oled Pointer to a boolean flag indicating if the OLED display update task should run.
+ * @param update_neopixel_matrix Pointer to a boolean flag indicating if the Neopixel matrix update task should run.
+ * @param show_durations Pointer to a boolean flag indicating if the task durations display should run.
+ *
+ * @note The function executes only one task per call, based on the first flag found to be true in the order listed.
+ *       After executing a task, it updates the states to prepare for the next task in the cycle.
+ */
+void control_states()
+{
+        if (can_read_temp)
         {
                 task_1_read_temperature();
+                update_states(&can_read_temp, &can_alert_neopixel);
+                return;
+        }
+        if (can_alert_neopixel)
+        {
                 task_5_alert_neopixel();
+                update_states(&can_alert_neopixel, &can_thermal_trend);
+                return;
+        }
+        if (can_thermal_trend)
+        {
                 task_3_thermal_trend();
+                printf("Tendência: %s\n", tendencia_para_texto(t));
+                update_states(&can_thermal_trend, &can_show_oled);
+                return;
+        }
+        if (can_show_oled)
+        {
                 task_2_show_oled();
+                update_states(&can_show_oled, &can_update_neopixel_matrix);
+                return;
+        }
+        if (can_update_neopixel_matrix)
+        {
+                can_update_neopixel_matrix = false; // Reset the flag to avoid re-triggering
                 task_4_update_neopixel_matrix();
                 show_duration_tasks_execution();
+                return;
         }
+}
 
-        return 0;
+/**
+ * @brief Updates the state variables for a cyclic scheduler.
+ *
+ * This function copies the value of the current state (`this_state`) to the next state (`next_state`),
+ * and then resets the current state to false. It is typically used to advance state flags in a cyclic
+ * or time-triggered scheduler.
+ *
+ * @param this_state Pointer to the current state boolean variable. Will be set to false after the call.
+ * @param next_state Pointer to the next state boolean variable. Will be updated with the value of `this_state`.
+ */
+void update_states(bool *this_state, bool *next_state)
+{
+        (*next_state) = (*this_state);
+        (*this_state) = false;
 }
 
 /**
@@ -69,7 +159,7 @@ int main()
  * (converted to seconds with microsecond precision), and the current trend as a formatted message.
  *
  * Assumes the following external/global variables and functions are available:
- * - ini_tarefa1, fim_tarefa1, ini_tarefa2, fim_tarefa2, ini_tarefa3, fim_tarefa3, ini_tarefa4, fim_tarefa4: 
+ * - ini_tarefa1, fim_tarefa1, ini_tarefa2, fim_tarefa2, ini_tarefa3, fim_tarefa3, ini_tarefa4, fim_tarefa4:
  *   Timestamps marking the start and end of each task.
  * - absolute_time_diff_us(): Function to compute the time difference in microseconds.
  * - media: The average temperature value.
@@ -78,7 +168,6 @@ int main()
  */
 void show_duration_tasks_execution()
 {
-
         int64_t tempo1_us = absolute_time_diff_us(ini_tarefa1, fim_tarefa1);
         int64_t tempo2_us = absolute_time_diff_us(ini_tarefa2, fim_tarefa2);
         int64_t tempo3_us = absolute_time_diff_us(ini_tarefa3, fim_tarefa3);
@@ -115,8 +204,8 @@ void task_1_read_temperature()
         ini_tarefa1 = get_absolute_time();
         media = tarefa1_obter_media_temp(&cfg_temp, DMA_TEMP_CHANNEL);
         fim_tarefa1 = get_absolute_time();
+        can_read_temp = false; // Reset the flag to avoid re-triggering
 }
-
 
 /**
  * @brief Executes the thermal trend analysis task.
@@ -151,6 +240,7 @@ void task_2_show_oled()
 {
         ini_tarefa2 = get_absolute_time();
         tarefa2_exibir_oled(media, t);
+        printf("Exibindo no OLED: %.2f °C | Tendência: %s\n", media, tendencia_para_texto(t));
         fim_tarefa2 = get_absolute_time();
 }
 
@@ -166,6 +256,7 @@ void task_4_update_neopixel_matrix()
 {
         ini_tarefa4 = get_absolute_time();
         tarefa4_matriz_cor_por_tendencia(t);
+        printf("Atualizando matriz NeoPixel com a tendência: %s\n", tendencia_para_texto(t));
         fim_tarefa4 = get_absolute_time();
 }
 
@@ -180,12 +271,36 @@ void task_4_update_neopixel_matrix()
  */
 void task_5_alert_neopixel()
 {
-        if(media < 1){
+        if (media < 1)
+        {
                 npSetAll(COR_BRANCA);
                 npWrite();
         }
-        else{
+        else
+        {
                 npClear();
                 npWrite();
         }
+        printf("Task 5! \n");
+}
+
+int main()
+{
+        // adcionar funções de callback que alteram o estado das flags
+
+        static repeating_timer_t timer1, timer2, timer3, timer4, timer5;
+        add_repeating_timer_ms(1000, repeating_timer_callback, NULL, &timer1);
+        add_repeating_timer_ms(1200, task5_callback, NULL, &timer5);
+        add_repeating_timer_ms(1250, task3_callback, NULL, &timer3);
+        add_repeating_timer_ms(1300, task2_callback, NULL, &timer2);
+        add_repeating_timer_ms(1350, task4_callback, NULL, &timer4);
+
+        setup(); // Inicializações: ADC, DMA, interrupções, OLED, etc.
+
+        while (true)
+        {
+                control_states();
+        }
+
+        return 0;
 }
