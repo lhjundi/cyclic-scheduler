@@ -32,11 +32,11 @@
 #include "testes_cores.h"
 #include "pico/stdio_usb.h"
 
-void tarefa_3();
-void tarefa_5();
-void tarefa_4();
-void tarefa_2();
-void tarefa_1();
+void task_3_thermal_trend();
+void task_5_alert_neopixel();
+void task_4_update_neopixel_matrix();
+void task_2_show_oled();
+void task_1_read_temperature();
 
 float media;
 tendencia_t t;
@@ -49,11 +49,11 @@ int main()
 
         while (true)
         {
-                tarefa_1();
-                tarefa_5();
-                tarefa_3();
-                tarefa_2();
-                tarefa_4();
+                task_1_read_temperature();
+                task_5_alert_neopixel();
+                task_3_thermal_trend();
+                task_2_show_oled();
+                task_4_update_neopixel_matrix();
 
                 // --- Cálculo dos tempos de execução ---
                 int64_t tempo1_us = absolute_time_diff_us(ini_tarefa1, fim_tarefa1);
@@ -75,7 +75,7 @@ int main()
 }
 
 /*******************************/
-void tarefa_1()
+void task_1_read_temperature()
 {
         // --- Tarefa 1: Leitura de temperatura via DMA ---
         ini_tarefa1 = get_absolute_time();
@@ -83,7 +83,7 @@ void tarefa_1()
         fim_tarefa1 = get_absolute_time();
 }
 /*******************************/
-void tarefa_3()
+void task_3_thermal_trend()
 {
         // --- Tarefa 3: Análise da tendência térmica ---
         ini_tarefa3 = get_absolute_time();
@@ -91,7 +91,7 @@ void tarefa_3()
         fim_tarefa3 = get_absolute_time();
 }
 /*******************************/
-void tarefa_2()
+void task_2_show_oled()
 {
         // --- Tarefa 2: Exibição no OLED ---
         ini_tarefa2 = get_absolute_time();
@@ -99,14 +99,14 @@ void tarefa_2()
         fim_tarefa2 = get_absolute_time();
 }
 /*******************************/
-void tarefa_4()
+void task_4_update_neopixel_matrix()
 {
         // --- Tarefa 4: Cor da matriz NeoPixel por tendência ---
         absolute_time_t ini_tarefa4 = get_absolute_time();
         tarefa4_matriz_cor_por_tendencia(t);
         absolute_time_t fim_tarefa4 = get_absolute_time();
 }
-void tarefa_5()
+void task_5_alert_neopixel()
 {
         // --- Tarefa 5: Extra ---
         while (media < 1)
