@@ -61,15 +61,29 @@ int main()
         return 0;
 }
 
+/**
+ * @brief Displays the execution duration of four tasks along with temperature information and trend.
+ *
+ * This function calculates the execution time (in microseconds) for four tasks using their respective
+ * start and end timestamps. It then prints the average temperature, the execution time of each task
+ * (converted to seconds with microsecond precision), and the current trend as a formatted message.
+ *
+ * Assumes the following external/global variables and functions are available:
+ * - ini_tarefa1, fim_tarefa1, ini_tarefa2, fim_tarefa2, ini_tarefa3, fim_tarefa3, ini_tarefa4, fim_tarefa4: 
+ *   Timestamps marking the start and end of each task.
+ * - absolute_time_diff_us(): Function to compute the time difference in microseconds.
+ * - media: The average temperature value.
+ * - tendencia_para_texto(): Function to convert the trend indicator to a human-readable string.
+ * - t: The current trend indicator.
+ */
 void show_duration_tasks_execution()
 {
-        // --- Cálculo dos tempos de execução ---
+
         int64_t tempo1_us = absolute_time_diff_us(ini_tarefa1, fim_tarefa1);
         int64_t tempo2_us = absolute_time_diff_us(ini_tarefa2, fim_tarefa2);
         int64_t tempo3_us = absolute_time_diff_us(ini_tarefa3, fim_tarefa3);
         int64_t tempo4_us = absolute_time_diff_us(ini_tarefa4, fim_tarefa4);
 
-        // --- Exibição no terminal ---
         printf("Temperatura: %.2f °C | T1: %.6fs | T2: %.6fs | T3: %.6fs | T4: %.6fs | Tendência: %s\n",
                media,
                tempo1_us / 1e6,
