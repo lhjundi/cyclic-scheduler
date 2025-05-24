@@ -37,6 +37,7 @@ void task_5_alert_neopixel();
 void task_4_update_neopixel_matrix();
 void task_2_show_oled();
 void task_1_read_temperature();
+void show_duration_tasks_execution();
 
 float media;
 tendencia_t t;
@@ -54,24 +55,28 @@ int main()
                 task_3_thermal_trend();
                 task_2_show_oled();
                 task_4_update_neopixel_matrix();
-
-                // --- Cálculo dos tempos de execução ---
-                int64_t tempo1_us = absolute_time_diff_us(ini_tarefa1, fim_tarefa1);
-                int64_t tempo2_us = absolute_time_diff_us(ini_tarefa2, fim_tarefa2);
-                int64_t tempo3_us = absolute_time_diff_us(ini_tarefa3, fim_tarefa3);
-                int64_t tempo4_us = absolute_time_diff_us(ini_tarefa4, fim_tarefa4);
-
-                // --- Exibição no terminal ---
-                printf("Temperatura: %.2f °C | T1: %.6fs | T2: %.6fs | T3: %.6fs | T4: %.6fs | Tendência: %s\n",
-                       media,
-                       tempo1_us / 1e6,
-                       tempo2_us / 1e6,
-                       tempo3_us / 1e6,
-                       tempo4_us / 1e6,
-                       tendencia_para_texto(t));
+                show_duration_tasks_execution();
         }
 
         return 0;
+}
+
+void show_duration_tasks_execution()
+{
+        // --- Cálculo dos tempos de execução ---
+        int64_t tempo1_us = absolute_time_diff_us(ini_tarefa1, fim_tarefa1);
+        int64_t tempo2_us = absolute_time_diff_us(ini_tarefa2, fim_tarefa2);
+        int64_t tempo3_us = absolute_time_diff_us(ini_tarefa3, fim_tarefa3);
+        int64_t tempo4_us = absolute_time_diff_us(ini_tarefa4, fim_tarefa4);
+
+        // --- Exibição no terminal ---
+        printf("Temperatura: %.2f °C | T1: %.6fs | T2: %.6fs | T3: %.6fs | T4: %.6fs | Tendência: %s\n",
+               media,
+               tempo1_us / 1e6,
+               tempo2_us / 1e6,
+               tempo3_us / 1e6,
+               tempo4_us / 1e6,
+               tendencia_para_texto(t));
 }
 
 /**
@@ -150,6 +155,15 @@ void task_4_update_neopixel_matrix()
         fim_tarefa4 = get_absolute_time();
 }
 
+/**
+ * @brief Controls the NeoPixel alert based on the value of 'media'.
+ *
+ * If 'media' is less than 1, all NeoPixels are set to the color defined by COR_BRANCA and updated.
+ * Otherwise, all NeoPixels are cleared and updated.
+ *
+ * Assumes that 'media' is a global or accessible variable, and that npSetAll, npWrite, npClear,
+ * and COR_BRANCA are defined elsewhere in the codebase.
+ */
 void task_5_alert_neopixel()
 {
         if(media < 1){
