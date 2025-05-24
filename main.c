@@ -145,9 +145,9 @@ void task_2_show_oled()
  */
 void task_4_update_neopixel_matrix()
 {
-        absolute_time_t ini_tarefa4 = get_absolute_time();
+        ini_tarefa4 = get_absolute_time();
         tarefa4_matriz_cor_por_tendencia(t);
-        absolute_time_t fim_tarefa4 = get_absolute_time();
+        fim_tarefa4 = get_absolute_time();
 }
 
 /**
