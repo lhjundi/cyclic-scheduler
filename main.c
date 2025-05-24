@@ -62,7 +62,7 @@ int main()
                 int64_t tempo4_us = absolute_time_diff_us(ini_tarefa4, fim_tarefa4);
 
                 // --- Exibição no terminal ---
-                printf("Temperatura: %.2f °C | T1: %.7fs | T2: %.7fs | T3: %.7fs | T4: %.7fs | Tendência: %s\n",
+                printf("Temperatura: %.2f °C | T1: %.6fs | T2: %.6fs | T3: %.6fs | T4: %.6fs | Tendência: %s\n",
                        media,
                        tempo1_us / 1e6,
                        tempo2_us / 1e6,
